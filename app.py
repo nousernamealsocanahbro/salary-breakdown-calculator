@@ -1,46 +1,47 @@
-def calculate_cpf(salary):
-    # trans = transitional
-    CPF_RATE = .37
-    E_RATE = .2
-    E_TRANS_RATE = .6
-    
-    E_CAP = 1600
-    CPF_CAP = 2960
-    
-    TRANS_FLOOR = 500
-    TRANS_CEILING = 750
-    
-    if salary < TRANS_FLOOR:
-        total_cpf = 0
-        employees_share = 0
-    elif TRANS_FLOOR <= salary <= TRANS_CEILING:
-        employees_share = E_TRANS_RATE * (salary - TRANS_FLOOR)
-        total_cpf = salary * CPF_RATE
-    else:
-        employees_share = min(salary * E_RATE, E_CAP)
-        total_cpf = min(salary * CPF_RATE, CPF_CAP)
+def validator(prompt:str, prompt_type:type):
+    while True:
+        try:
+            message = prompt_type(input(prompt))
             
-    return total_cpf, employees_share
+            return message
+        except ValueError:
+            print("Invalid input, please try again.")
 
-def calculate_savings(salary):
-    SAVINGS_RATE = .2
+def calculate_cpf(salary:float):
+    CPF_RATE_UNDER_500 = 0.6
+    CPF_RATE_STANDARD = 0.2
     
-    savings = salary * SAVINGS_RATE
+    if salary < 500:
+        cpf_contributions = 0
+    elif salary < 750:
+        cpf_contributions = CPF_RATE_UNDER_500 * (salary - 500)
+    else:
+        cpf_contributions = min(CPF_RATE_STANDARD * salary, 1600)
+        
+    return cpf_contributions
+
+def calculate_savings(percentage, take_home_pay):
+    percentage /= 100
+    savings = take_home_pay * percentage
     
     return savings
-
+    
 def main():
-    salary = float(input("Input salary: $"))
+    while True:
+        salary = validator("Input salary: ", float)
+        savings_percentage = validator("Input percent to save: ", float)
+        
+        cpf_contributions = calculate_cpf(salary)
+        savings = calculate_savings(savings_percentage, salary - cpf_contributions)
+        
+        print(f"Salary: ${salary}")
+        print(f"CPF contributions: ${round(cpf_contributions, 2)}")
+        print(f"Amount to save: ${round(savings, 2)}")
+        print(f"Amount left: ${round(salary - cpf_contributions - savings, 2)}")
+        
+        choice = validator("Press any key to continue, or type 'n' to exit program: ", str)
+        
+        if choice == 'n':
+            break
     
-    total_cpf, employees_share = calculate_cpf(salary)
-    savings = calculate_savings(salary - employees_share)
-    
-    print("")
-    print(f"Total CPF contributions: ${total_cpf:,.2f}")
-    print(f"Your CPF share: ${employees_share:,.2f}")
-    print(f"Amount to save: ${savings:,.2f}")
-    print('-' * 20)
-    print(f"Amount left: ${salary - employees_share - savings:,.2f}")
-    
-if __name__ == "__main__":
-    main()
+main()
